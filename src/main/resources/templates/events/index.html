@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default}">
+<head>
+  <title>All Events</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js"></script>
+  <style>
+    body {
+      margin: 0; 
+      padding: 0; 
+    }
+    #map {
+      position: relative;
+      width: 100%; 
+      height: 400px;
+      margin-top: 20px;
+      border-radius: 10px;
+    }
+    .card {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .btn-custom {
+      border-radius: 20px;
+      padding: 8px 15px;
+    }
+    .table-hover tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+    .container-custom {
+      max-width: 1200px;
+      margin: auto;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div layout:fragment="content" class="container-custom py-4">
+
+    <div class="mb-3">
+      <a th:href="@{/}" class="btn btn-secondary btn-custom">
+        <i class="fas fa-home"></i> Return to Home
+      </a>
+    </div>
+    
+    <!-- SEARCH FORM -->
+    <div class="card p-3 mb-4">
+      <form th:action="@{events}" method="get" class="d-flex gap-2">
+        <input type="text" name="search" th:value="${search}" placeholder="Search by event name" class="form-control">
+        <button type="submit" class="btn btn-primary btn-custom"><i class="fas fa-search"></i> Search</button>
+      </form>
+    </div>
+    
+    <!-- ADD EVENT SECTION -->
+    <div sec:authorize="hasRole('ROLE_ADMINISTRATOR')" class="card p-4 mb-4">
+        <h2 class="text-success"><i class="fa-solid fa-plus"></i> Add Event</h2>
+        <form th:action="@{/events/add}" th:method="get">
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-plus"></i> Add</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- UPCOMING EVENTS -->
+    <div class="card p-4 mb-4">
+      <h2 class="text-primary"><i class="fas fa-calendar-alt"></i> Upcoming Events</h2>
+      <table class="table table-hover table-bordered mt-3">
+        <thead class="table-dark">
+          <tr>
+            <th><i class="fa-solid fa-bolt"></i> Event</th>
+            <th><i class="fa-solid fa-map-marker-alt"></i> Venue</th>
+            <th><i class="fa-solid fa-calendar"></i> Date</th>
+            <th><i class="fa-solid fa-clock"></i> Time</th>
+			<!-- Only visible for ADMIN role -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="e : ${upcomingEvents}">
+            <td>
+              <a th:href="@{/events/{id}(id=${e.id})}" th:text="${e.name}"></a>
+            </td>
+            <td>
+			  <a th:href="@{/venues/{id}(id=${e.venue.id})}" th:text="${e.venue.name}">Venue Name</a>
+            </td>
+            <td th:text="${e.date}">Date</td>
+            <td th:text="${e.time}">Time</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- SOCIAL FEED -->
+	<div class="card p-4 mb-4">
+	    <h2 class="text-info"><i class="fab fa-mastodon"></i> Social Feed</h2>
+	    <table class="table table-hover table-bordered mt-3">
+	        <thead class="table-dark">
+	            <tr>
+	                <th><i class="fa-solid fa-clock"></i> Time</th>
+	                <th><i class="fa-solid fa-calendar"></i> Date</th>
+	                <th><i class="fa-solid fa-comments"></i> Comment</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            <tr th:each="post : ${mastodonPosts}">
+	                <td th:text="${T(java.time.Instant).parse(post.createdAt)
+					               .atZone(T(java.time.ZoneId).systemDefault())
+					               .toLocalDateTime()
+					               .format(T(java.time.format.DateTimeFormatter).ofPattern('HH:mm'))}">
+					</td>
+					<td th:text="${T(java.time.Instant).parse(post.createdAt)
+					               .atZone(T(java.time.ZoneId).systemDefault())
+					               .toLocalDateTime()
+					               .format(T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd'))}">
+					</td>
+	                <td>
+				        <a th:href="${post.url}" th:utext="${post.content}"></a>
+				    </td>
+	            </tr>
+	        </tbody>
+	    </table>
+	</div>
+
+    <!-- PAST EVENTS -->
+    <div class="card p-4 mb-4">
+      <h2 class="text-secondary"><i class="fas fa-history"></i> Past Events</h2>
+      <table class="table table-hover table-bordered mt-3">
+        <thead class="table-dark">
+          <tr>
+            <th><i class="fa-solid fa-bolt"></i> Event</th>
+            <th><i class="fa-solid fa-map-marker-alt"></i> Venue</th>
+            <th><i class="fa-solid fa-calendar"></i> Date</th>
+            <th><i class="fa-solid fa-clock"></i> Time</th>
+			<!-- Only visible for ADMIN role -->
+			      <!-- <th sec:authorize="hasRole('ROLE_ADMINISTRATOR')">Actions</th> -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="e : ${pastEvents}">
+            <td>
+              <a th:href="@{/events/{id}(id=${e.id})}" th:text="${e.name}"></a>
+            </td>
+            <td>
+			        <a th:href="@{/venues/{id}(id=${e.venue.id})}" th:text="${e.venue.name}">Venue Name</a>
+            </td>
+            <td th:text="${e.date}">Date</td>
+            <td th:text="${e.time}">Time</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <script th:inline="javascript">
+      document.addEventListener('DOMContentLoaded', function() {
+		mapboxgl.accessToken = /*[[${mapToken}]]*/
+        const map = new mapboxgl.Map({
+          container: 'map',
+          style: 'mapbox://styles/mapbox/streets-v11',
+          center: [-4, 55],
+          zoom: 4.1
+        });
+
+        // Use Thymeleaf inline JavaScript to pass the events
+        const events = /*[[${upcomingEvents}]]*/ [];
+
+        // Function to fetch venue details for a single event
+        async function fetchVenueForEvent(event) {
+          try {
+            // Fetch event details from API with explicit JSON headers
+            const eventResponse = await fetch(`/api/events/${event.id}`, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+
+            // Check response
+            if (!eventResponse.ok) {
+              throw new Error(`HTTP error! status: ${eventResponse.status}`);
+            }
+
+            const eventData = await eventResponse.json();
+
+            // Extract venue link
+            const venueLink = eventData._links.venue.href;
+
+            // Fetch venue details with explicit JSON headers
+            const venueResponse = await fetch(venueLink, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+
+            // Check response
+            if (!venueResponse.ok) {
+              throw new Error(`HTTP error! status: ${venueResponse.status}`);
+            }
+
+            const venueData = await venueResponse.json();
+
+            // Return event with venue details
+            return {
+              ...event,
+              venue: {
+                name: venueData.name,
+                longitude: venueData.longitude,
+                latitude: venueData.latitude
+              }
+            };
+          } catch (error) {
+            console.error(`Error fetching venue for event ${event.id}:`, error);
+            return event; // Return original event if fetch fails
+          }
+        }
+
+        // Fetch venue details for all events
+        async function processEvents() {
+		    const eventsWithVenues = await Promise.all(events.map(fetchVenueForEvent));
+		
+		    const venuesMap = new Map();
+		
+		    eventsWithVenues.forEach(event => {
+		        if (event.venue) {
+		            const venueKey = event.venue.name;
+		
+		            if (!venuesMap.has(venueKey)) {
+		                venuesMap.set(venueKey, {
+		                    venueName: event.venue.name,
+		                    longitude: event.venue.longitude,
+		                    latitude: event.venue.latitude,
+		                    events: []
+		                });
+		            }
+		
+		            venuesMap.get(venueKey).events.push({
+		                name: event.name,
+		                time: event.time !== null && event.time !== undefined ? `Starts at ${event.time}` : 'No start time set'
+		            });
+		        }
+		    });
+		
+		    // Add markers to the map
+		    venuesMap.forEach(venue => {
+		        const eventHTML = venue.events
+		            .map(event => `<h3 style="font-size:14px; text-align: center"><strong>${event.name}</strong> - ${event.time}</h3>`)
+		            .join('');
+		
+		        new mapboxgl.Marker()
+		            .setLngLat([venue.longitude, venue.latitude])
+		            .setPopup(new mapboxgl.Popup().setHTML(
+		                `<h3 style="font-size:16px; text-align: center"><strong>${venue.venueName}</strong></h3>
+		                 ${eventHTML}`
+		            ))
+		            .addTo(map);
+		    });
+		}
+
+        // Call the function to process events
+        processEvents();
+
+		map.addControl(new mapboxgl.NavigationControl());
+        map.on('load', function() {
+          window.setTimeout(function() {
+            map.resize();
+          }, 200);
+        });
+      });
+
+    </script>
+  </div>
+</body>
+</html>

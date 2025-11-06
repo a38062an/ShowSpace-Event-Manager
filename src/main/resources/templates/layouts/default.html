@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title layout:title-pattern="$LAYOUT_TITLE: $CONTENT_TITLE">ShowSpace</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/webjars/font-awesome/css/all.min.css" />
+  <link rel="stylesheet" th:href="@{/css/custom.css}" />
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <i class="fas fa-calendar-check"></i> ShowSpace
+      </a>
+      
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <div sec:authorize="!isAuthenticated()" class="d-flex align-items-center gap-2">
+          <span class="text-muted small">
+            <i class="fas fa-user-slash"></i> Not signed in
+          </span>
+          <a class="btn btn-sm btn-primary" th:href="@{/sign-in}">
+            <i class="fas fa-sign-in-alt"></i> Sign in
+          </a>
+        </div>
+        
+        <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
+          <span class="text-muted small">
+            <i class="fas fa-user"></i> <span sec:authentication="name"></span>
+          </span>
+          <form th:action="@{/sign-out}" method="post" class="d-inline">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-sign-out-alt"></i> Sign out
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div layout:fragment="content">
+      Main page body goes here...
+    </div>
+  </div>
+
+  <script type="text/javascript" src="/webjars/popper.js/umd/popper.min.js"></script>
+  <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+${AnsiColor.BRIGHT_BLUE}  ____  _                   ____                      
+${AnsiColor.BRIGHT_BLUE} / ___|| |__   _____      _/ ___| _ __   __ _  ___ ___ 
+${AnsiColor.BRIGHT_CYAN} \___ \| '_ \ / _ \ \ /\ / /\___ \| '_ \ / _` |/ __/ _ \
+${AnsiColor.BRIGHT_CYAN}  ___) | | | | (_) \ V  V /  ___) | |_) | (_| | (_|  __/
+${AnsiColor.BRIGHT_BLUE} |____/|_| |_|\___/ \_/\_/  |____/| .__/ \__,_|\___\___|
+${AnsiColor.BRIGHT_BLUE}                                   |_|                    
+${AnsiColor.BRIGHT_WHITE}  Event and Venue Management Platform
+${AnsiColor.BRIGHT_GREEN}  Spring Boot ${spring-boot.version}
