@@ -1,0 +1,56 @@
+{
+  "family": "showspace-task",
+  "networkMode": "bridge",
+  "executionRoleArn": "arn:aws:iam::124878108241:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "showspace-container",
+    "image": "124878108241.dkr.ecr.eu-west-2.amazonaws.com/showspace:latest",
+  "memory": 1024,
+    "cpu": 128,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILE",
+          "value": "default"
+        },
+        {
+          "name": "DB_PATH",
+          "value": "/app/data/showspace"
+        },
+        {
+          "name": "DB_USERNAME",
+          "value": "h2"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "spring"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xmx192m -Xms96m -XX:+UseSerialGC"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/showspace",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "128",
+  "memory": "800"
+}

@@ -27,3 +27,8 @@ Thumbs.db
 
 # Spring Boot
 application-local.properties
+
+# AWS/Deployment
+aws/*.bak
+aws/*.json.bak
+user-data.txt

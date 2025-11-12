@@ -31,18 +31,30 @@ public class Persistence {
 	// Persistence objects.
 	private final static String PACKAGES = "anthonynguyen.showspace.entities";
 
-	// Connection properties.
-	private final static Path DB_PATH = Paths.get(System.getProperty("user.dir"), "db", "showspace-dev");
+	// Connection properties - support environment variables for cloud deployment
+	private final static String DB_PATH = getDbPath();
 	private final static String DB_OPTS = "DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
 
 	// Hibernate properties.
 	private final static boolean H2_SHOW_SQL = false;
-	private final static String H2_USERNAME = "h2";
-	private final static String H2_PASSWORD = "spring";
+	private final static String H2_USERNAME = System.getenv().getOrDefault("DB_USERNAME", "h2");
+	private final static String H2_PASSWORD = System.getenv().getOrDefault("DB_PASSWORD", "spring");
+
+	// Get database path from environment variable or use default local path
+	private static String getDbPath() {
+		String dbPathEnv = System.getenv("DB_PATH");
+		if (dbPathEnv != null && !dbPathEnv.isEmpty()) {
+			log.info("Using database path from environment: " + dbPathEnv);
+			return dbPathEnv;
+		}
+		Path defaultPath = Paths.get(System.getProperty("user.dir"), "db", "showspace-dev");
+		log.info("Using default database path: " + defaultPath);
+		return defaultPath.toString();
+	}
 
 	@Bean
 	public DataSource dataSource() {
-		String dbUrl = "jdbc:h2:" + DB_PATH + ";" + DB_OPTS;
+		String dbUrl = "jdbc:h2:file:" + DB_PATH + ";" + DB_OPTS;
 
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("org.h2.Driver");

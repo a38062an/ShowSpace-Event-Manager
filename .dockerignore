@@ -1,0 +1,54 @@
+# Ignore build artifacts
+target/
+*.class
+*.jar
+*.war
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.iml
+.settings/
+.project
+.classpath
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore local database files
+db/
+*.mv.db
+*.trace.db
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore test reports
+surefire-reports/
+
+# Ignore Maven wrapper
+.mvn/
+
+# Ignore Git
+.git/
+.gitignore
+
+# Ignore documentation
+README.md
+*.md
+Licence.md
+
+# Ignore deployment scripts and configs
+aws/
+launchers/
+*.sh
+
+# Ignore config files with secrets (these should use env vars)
+*-config.properties
+application*.properties
+
+# Keep only necessary files for Docker build
+!pom.xml
+!src/

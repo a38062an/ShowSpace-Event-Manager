@@ -3,6 +3,7 @@ package anthonynguyen.showspace.dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import anthonynguyen.showspace.entities.Event;
 import anthonynguyen.showspace.entities.Venue;
@@ -23,7 +24,11 @@ public class HomeServiceImpl implements HomeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Venue> getTopVenuesByEventCount(int limit) {
-        return homeRepository.findTopVenuesByEventCount(PageRequest.of(0, limit));
+        List<Venue> venues = homeRepository.findTopVenuesByEventCount(PageRequest.of(0, limit));
+        // Eagerly initialize the events collection to avoid LazyInitializationException
+        venues.forEach(venue -> venue.getEvents().size());
+        return venues;
     }
 }
